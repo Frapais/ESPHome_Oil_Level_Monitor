@@ -17,15 +17,42 @@
 </p>
 
 <p align="center">
+  <a href="#description">Description</a> •
   <a href="#hardware-components">Hardware Components</a> •
   <a href="#how-to-use">How To Use</a> •
   <a href="#download">Download</a> •
   <a href="#credits">Credits</a> •
   <a href="#related">Related</a> •
-  <a href="#license">License</a>
 </p>
 
 ![screenshot](https://github.com/Frapais/ESPHome_Oil_Level_Monitor/blob/main/IMG_20230109_153445.jpg)
+
+## Description
+### Hardware description
+This sensor uses an ESP32 board that supports battery power/charging. The ESP32 also measures the battery voltage via an analog pin, through a voltage divider. The voltage divired is needed because the maximum voltage of the battery is **4.2V** while the ADC of the ESP32 can measure only up to **1.1V**. 
+The oil level measurement is done with a waterproof ultrasonic sensor and its module pcb. However, you can probably use a regular ultrasonic sensor. 
+The electronics were mounted inside a custom enclosure that was designed to screw on the lid of my oil tank.
+### How the measurement works
+This sensor works using an Ultrasonic sensor, to measure the level of a liquid in a tank.
+In this particular case, the sensor is placed at the top of the tank, pointing down on the surface of the liquid.
+This way, we can measure the distance of the liquid from the top of the tank, and, knowing the dimensions of the tank, we can calculate its volume.
+Specifically, we measure the volume of the remaining liquid using the following formula:
+$$remainingVolume=maxVolume - measuredVolume$$
+
+where *maxVolume* is calculated from the dimensions of the tank (*Length, Width, Height*), and *measuredVolume* is calculated using the following formula:
+$$measuredVolume = Length * Width * measuredDistance$$
+
+Similarly, the consumed liquid can be calculated using the following formula:
+$$consumedVolume = measuredVolume  - (maxVolume - initialVolume)$$
+where *initialVolume* is the volume of the liquid when we start the consumption measurement
+
+### General code flow
+* ESP wakes up for **60 seconds**
+  * Connects to Home Assistant
+  * Samples **17 times** the oil surface distance and calculates an average
+  * Samples the battery voltage and converts it to **percentage**
+  * Calculates and updates the **consumed oil volume** and the **remaining oil volume**
+* Falls to deep sleep for **29 minutes**
 
 ## Hardware Components
 
