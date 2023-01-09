@@ -1,0 +1,122 @@
+esphome:
+  name: "fuel-level-sensor"
+  on_boot:
+    then:
+      - script.execute: deep_sleep_evaluation
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "---your ssid---"
+    password: "---your password---"
+
+captive_portal:
+
+# Ultrasonic sensor configuration
+# Since the wake up duration is 60s, the whole sampling process must take less than that.
+# We sample the ultrasonic sensor 17 times, every 1s, and calculate an average using the "quantile" filter, taking 17s in total.
+# So, we have 17s to sample and calculate the values, and 43s to establish WiFi connection after waking up.
+sensor:
+  - platform: ultrasonic
+    trigger_pin: 25
+    echo_pin: 26
+    id: measured_distance
+    accuracy_decimals: 4  # Using 4 decimal digits we can achieve 0.1L resolution 
+    update_interval: 1000ms # You may change this value
+    filters:
+    # quantile filtering requires odd number of samples.
+    - quantile:
+        window_size: 17
+        send_every: 17
+        send_first_at: 17
+        quantile: .9
+  
+  # Battery monitoring configuration
+  - platform: adc
+    pin: 35
+    id: battery_percentage
+    name: "Fuel level sensor Battery"
+    update_interval: 17s
+    filters:
+      - calibrate_linear: # Convert analog read values to percentage
+          # Map 0.0 (from sensor) to 0.0 (true value)
+          - 0.73 -> 0
+          - 1.022 -> 100
+    unit_of_measurement: '%'
+    accuracy_decimals: 0
+
+  # Heating oil volume calculation configuration
+  # Knowing the dimensions of the oil tank, we can calculate its volume,
+  # thus, the distance measured by the ultrasonic sensor, gives us the volume of the empty-portion of the tank.
+  # Knowing the initial volume of the oil (0.239 m³), the maximum volume of the tank (0.357 m³), and the measured volume by the sensor (measured_distance * length * width),
+  # We can calculate the burned oil volume using the following formula:
+  # burned oil volume = (measured_volume) - (max_volume - initial_volume)
+  - platform: template
+    id: burned_diesel
+    name: "Burned diesel"
+    device_class: gas
+    state_class: "total_increasing"
+    accuracy_decimals: 3
+    lambda: return  id(measured_distance).state * 0.70 * 0.30 - (0.357-0.239);
+    unit_of_measurement: 'm³'
+    update_interval: 17s
+  
+  # Remaining oil volume calculation configuration
+  # Similarly, we can calculate the remaining oil in the tank using the following formula:
+  # remaining oil volume = max_volume - measured_volume
+  # Only this time, the remaining volume is measured in Liters to make it easier to read.
+  - platform: template
+    id: remaining_diesel
+    name: "Remaining diesel"
+    accuracy_decimals: 1
+    lambda: return  357.0 - (id(measured_distance).state * 0.70 * 0.30) * 1000;
+    unit_of_measurement: 'L'
+    update_interval: 17s        #You may change this value (in seconds)
+
+
+          
+# Deep sleep configuration
+deep_sleep:
+  id: deep_sleep_enabled
+  sleep_duration: 29min
+
+# This section reads a binary sensor in Home Assistant that disables deep sleep when pressed.
+# It makes it easier to connect to the device and upload the code.
+binary_sensor:
+  - platform: homeassistant
+    id: disable_deep_sleep
+    entity_id: input_boolean.disable_deep_sleep
+
+# Deep sleep implementation
+# When this script is called, the device stays awake for 60s and calculates everything we mentioned above.
+# Then, if deep sleep is enabled, it will go to sleep for the duration we set above.
+script:
+  - id: deep_sleep_evaluation
+    mode: queued
+    then:
+      - delay: 60s
+      - if:
+          condition:
+            binary_sensor.is_on: disable_deep_sleep
+          then:
+            - logger.log: 'Deep Sleep Disabled'
+          else:
+            - deep_sleep.enter: deep_sleep_enabled
+      - script.execute: deep_sleep_evaluation
