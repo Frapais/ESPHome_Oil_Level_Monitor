@@ -104,5 +104,5 @@ You can find similar code in the official Ultrasonic sensor implementation page 
 
 
 > GitHub [@frapais](https://github.com/Frapais) &nbsp;&middot;&nbsp;
-> Instagram [@worked_first_time](https://www.instagram.com/worked_first_time/)
+> Instagram [@worked_first_time](https://www.instagram.com/sprig_labs/)
 
