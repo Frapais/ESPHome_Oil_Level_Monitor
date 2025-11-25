@@ -97,12 +97,12 @@ You can find similar code in the official Ultrasonic sensor implementation page 
 
 ## Support
 
-<a href="https://www.buymeacoffee.com/frapais" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/purple_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
+<a href="https://buymeacoffee.com/spriglabs" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/purple_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
 
 
 
 
-> GitHub [@frapais](https://github.com/Frapais) &nbsp;&middot;&nbsp;
-> Instagram [@worked_first_time](https://www.instagram.com/sprig_labs/)
+> YouTube [@Sprig Labs](https://www.youtube.com/@sprig_labs) &nbsp;&middot;&nbsp;
+> Instagram [@Sprig Labs](https://www.instagram.com/sprig_labs/)
 
